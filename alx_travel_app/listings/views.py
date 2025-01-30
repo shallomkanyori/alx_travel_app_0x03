@@ -6,6 +6,7 @@ from rest_framework import status
 from .models import Listing, Booking, Review
 from django.contrib.auth.models import User
 from .serializers import ListingSerializer, BookingSerializer
+from tasks import send_booking_email
 
 class ListingViewSet(viewsets.ModelViewSet):
     queryset = Listing.objects.all()
@@ -41,6 +42,8 @@ class BookingViewSet(viewsets.ModelViewSet):
         )
 
         booking.save()
+
+        send_booking_email.delay(booking.id)
 
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
